@@ -1,0 +1,111 @@
+CREATE DATABASE NITT; 
+ USE NITT; 
+  
+ -- Create Department table 
+ CREATE TABLE Department ( 
+     dept_id INT PRIMARY KEY, 
+     dept_name VARCHAR(50) 
+ ); 
+  
+ -- Create Student table 
+ CREATE TABLE Student ( 
+     rollno INT PRIMARY KEY, 
+     name VARCHAR(50), 
+     gender VARCHAR(10), 
+     mark1 INT, 
+     mark2 INT, 
+     mark3 INT, 
+     dept_id INT, 
+     total INT GENERATED ALWAYS AS (mark1 + mark2 + mark3) STORED, 
+     average FLOAT GENERATED ALWAYS AS (total / 3.0) STORED, 
+     FOREIGN KEY (dept_id) REFERENCES Department(dept_id) 
+ ); 
+  
+ -- Create Staff table 
+ CREATE TABLE Staff ( 
+     staff_id INT PRIMARY KEY, 
+     name VARCHAR(50), 
+     designation VARCHAR(50), 
+     qualification VARCHAR(50), 
+     dept_id INT, 
+     FOREIGN KEY (dept_id) REFERENCES Department(dept_id) 
+ ); 
+  
+ -- Create Tutor table 
+ CREATE TABLE Tutor ( 
+     rollno INT PRIMARY KEY, 
+     staff_id INT, 
+     FOREIGN KEY (rollno) REFERENCES Student(rollno), 
+     FOREIGN KEY (staff_id) REFERENCES Staff(staff_id) 
+ ); 
+  
+ -- Insert sample data into Department table 
+ INSERT INTO Department (dept_id, dept_name) VALUES 
+     (1, 'cse'), 
+     (2, 'ece'), 
+     (3, 'mech'); 
+  
+ -- Insert sample data into Student table 
+ INSERT INTO Student (rollno, name, gender, mark1, mark2, mark3, dept_id) VALUES 
+     (101, 'Alice', 'female', 85, 90, 88, 1), 
+     (102, 'Bob', 'male', 78, 88, 92, 1), 
+     (103, 'Charlie', 'male', 95, 85, 78, 2), 
+     (104, 'David', 'male', 92, 89, 78, 1); 
+  
+ -- Insert sample data into Staff table 
+ INSERT INTO Staff (staff_id, name, designation, qualification, dept_id) VALUES 
+     (201, 'Eve', 'professor', 'Ph.D', 1), 
+     (202, 'Frank', 'associate professor', 'M.Tech', 2), 
+     (203, 'Grace', 'assistant professor', 'M.Tech', 1); 
+  
+ -- Insert sample data into Tutor table 
+ INSERT INTO Tutor (rollno, staff_id) VALUES 
+     (101, 201), 
+     (102, 203), 
+     (103, 202); 
+  
+ --  2. Display the no.of. student under the department ‘cse’.     
+ SELECT COUNT(*) AS student_count FROM Student WHERE dept_id = (SELECT dept_id FROM Department WHERE dept_name = 'cse'); 
+  
+ --  3. Display the student details who got an average > 85 
+ SELECT * FROM Student WHERE average > 85; 
+  
+ --  4. How many students are under the tutor 'x' 
+ SELECT COUNT(*) AS student_count FROM Tutor WHERE staff_id = '201'; 
+  
+ --  5. Display the staff details who work in the CSE department 
+ SELECT * FROM Staff WHERE dept_id = (SELECT dept_id FROM Department WHERE dept_name = 'cse'); 
+  
+ --  6. How many designations and departments are there? 
+ SELECT COUNT(DISTINCT designation) AS num_designations FROM Staff; 
+ SELECT COUNT(DISTINCT dept_name) AS num_departments FROM Department; 
+  
+ --  7. Display the student details whose name starts with 'R' 
+ SELECT * FROM Student WHERE name LIKE 'R%'; 
+  
+ --  8. Display the name of the department, tutor details for the particular student 
+ SELECT S.rollno, S.name AS student_name,  
+     D.dept_name, T.staff_id, ST.name AS tutor_name,  
+     ST.designation AS tutor_designation 
+     FROM Student S 
+     JOIN Department D ON S.dept_id = D.dept_id 
+     JOIN Tutor T ON S.rollno = T.rollno 
+     JOIN Staff ST ON T.staff_id = ST.staff_id 
+     WHERE S.rollno = 101; 
+  
+ -- 9. Display the total number of male and female students in each department 
+ SELECT D.dept_name,  
+        SUM(CASE WHEN S.gender = 'male' THEN 1 ELSE 0 END) AS male_count, 
+        SUM(CASE WHEN S.gender = 'female' THEN 1 ELSE 0 END) AS female_count 
+ FROM Student S 
+ JOIN Department D ON S.dept_id = D.dept_id 
+ GROUP BY D.dept_name; 
+  
+ --  10. Create a view to display staff details and their department name whose designation is professor 
+ CREATE VIEW ProfessorDetails AS 
+ SELECT S.staff_id, S.name AS staff_name, S.designation, S.qualification, D.dept_name 
+ FROM Staff S 
+ JOIN Department D ON S.dept_id = D.dept_id 
+ WHERE S.designation = 'professor'; 
+  
+ SELECT * FROM ProfessorDetails;

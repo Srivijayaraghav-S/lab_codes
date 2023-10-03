@@ -1,0 +1,113 @@
+CREATE TABLE EMPLOYEE (
+    fname VARCHAR(50) NOT NULL,
+    mint CHAR(1),
+    lname VARCHAR(50) NOT NULL,
+    ssn CHAR(9) NOT NULL PRIMARY KEY,
+    bdate DATE,
+    address VARCHAR(100),
+    sex CHAR(1),
+    salary DECIMAL(10, 2),
+    superssn CHAR(9),
+    dno INT,
+    FOREIGN KEY (superssn) REFERENCES EMPLOYEE(ssn),
+    FOREIGN KEY (dno) REFERENCES DEPARTMENT(dno)
+);
+
+CREATE TABLE DEPARTMENT (
+    dname VARCHAR(50) NOT NULL,
+    dno INT NOT NULL PRIMARY KEY,
+    mgrssn CHAR(9) NOT NULL,
+    mgrstartdate DATE NOT NULL,
+    dlocation VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE PROJECT (
+    pname VARCHAR(50) NOT NULL,
+    pnumber INT NOT NULL PRIMARY KEY,
+    plocation VARCHAR(100) NOT NULL,
+    dno INT NOT NULL,
+    FOREIGN KEY (dno) REFERENCES DEPARTMENT(dno)
+);
+
+CREATE TABLE WORKSON (
+    essn CHAR(9),
+    pno INT,
+    hours DECIMAL(5, 2),
+    PRIMARY KEY (essn, pno),
+    FOREIGN KEY (essn) REFERENCES EMPLOYEE(ssn),
+    FOREIGN KEY (pno) REFERENCES PROJECT(pnumber)
+);
+
+CREATE TABLE DEPENDENT (
+    essn CHAR(9),
+    dependentname VARCHAR(50),
+    sex CHAR(1),
+    bdate DATE,
+    relationship VARCHAR(50),
+    FOREIGN KEY (essn) REFERENCES EMPLOYEE(ssn)
+);
+
+SELECT e.bdate, e.address
+FROM EMPLOYEE e
+INNER JOIN DEPARTMENT d ON e.dno = d.dno
+WHERE d.dname = 'Research';
+
+SELECT p.pnumber, p.dno, dm.lname AS mgr_last_name, dm.address AS mgr_address, dm.bdate AS mgr_birth_date
+FROM PROJECT p
+JOIN DEPARTMENT d ON p.dno = d.dno
+JOIN EMPLOYEE dm ON d.mgrssn = dm.ssn
+WHERE p.plocation = 'Berlin';
+
+SELECT e.fname, e.lname, s.fname AS supervisor_fname, s.lname AS supervisor_lname
+FROM EMPLOYEE e
+LEFT JOIN EMPLOYEE s ON e.superssn = s.ssn;
+
+SELECT e.*, d.*
+FROM EMPLOYEE e
+INNER JOIN DEPARTMENT d ON e.dno = d.dno
+WHERE d.dname = 'Research';
+
+SELECT DISTINCT p.pnumber
+FROM PROJECT p
+JOIN WORKSON w ON p.pnumber = w.pno
+JOIN EMPLOYEE e ON w.essn = e.ssn
+JOIN DEPARTMENT d ON p.dno = d.dno
+WHERE e.lname = 'John' OR d.mgrssn = e.ssn;
+
+SELECT e.fname, e.lname
+FROM EMPLOYEE e
+LEFT JOIN DEPENDENT d ON e.ssn = d.essn
+WHERE d.essn IS NULL;
+
+SELECT e.fname, e.lname
+FROM EMPLOYEE e
+JOIN DEPENDENT d ON e.ssn = d.essn
+WHERE e.fname = d.dependentname AND e.sex = d.sex;
+
+SELECT MAX(salary) AS max_salary, MIN(salary) AS min_salary
+FROM EMPLOYEE;
+
+SELECT COUNT(DISTINCT salary) AS distinct_salary_count
+FROM EMPLOYEE;
+
+CREATE INDEX idx_employee_fname ON EMPLOYEE(fname);
+
+CREATE VIEW EmployeeView AS
+SELECT fname, salary
+FROM EMPLOYEE;
+
+CREATE VIEW EmployeeProjectView AS
+SELECT e.fname, e.dno AS deptid, p.pnumber AS projectnumber
+FROM EMPLOYEE e
+JOIN WORKSON w ON e.ssn = w.essn
+JOIN PROJECT p ON w.pno = p.pnumber;
+
+SELECT SUM(salary) AS total_salary_paid
+FROM EMPLOYEE;
+
+SELECT MAX(salary) AS max_salary, MIN(salary) AS min_salary, AVG(salary) AS avg_salary
+FROM EMPLOYEE;
+
+SELECT fname, lname
+FROM EMPLOYEE
+WHERE bdate BETWEEN '2001-06-30' AND '2001-12-30';

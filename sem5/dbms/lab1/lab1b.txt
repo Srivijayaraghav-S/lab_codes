@@ -1,0 +1,87 @@
+-- Create Hostel database 
+ CREATE DATABASE HostelDB; 
+ USE HostelDB; 
+  
+ -- Create Hostel table 
+ CREATE TABLE Hostel ( 
+     hno INT PRIMARY KEY, 
+     hname VARCHAR(50), 
+     type ENUM('boys', 'girls') 
+ ); 
+  
+ -- Create Menu table 
+ CREATE TABLE Menu ( 
+     hno INT, 
+     day VARCHAR(20), 
+     breakfast VARCHAR(50), 
+     lunch VARCHAR(50), 
+     dinner VARCHAR(50), 
+     PRIMARY KEY (hno, day), 
+     FOREIGN KEY (hno) REFERENCES Hostel(hno) 
+ ); 
+  
+ -- Create Warden table 
+ CREATE TABLE Warden ( 
+     wname VARCHAR(50) PRIMARY KEY, 
+     qual VARCHAR(50), 
+     hno INT, 
+     FOREIGN KEY (hno) REFERENCES Hostel(hno) 
+ ); 
+  
+ -- Create Student table 
+ CREATE TABLE Student ( 
+     sid INT PRIMARY KEY, 
+     sname VARCHAR(50), 
+     gender ENUM('male', 'female'), 
+     year INT, 
+     hno INT, 
+     FOREIGN KEY (hno) REFERENCES Hostel(hno) 
+ ); 
+ -- 2. Display the total number of girls and boys hostels: 
+ SELECT type, COUNT(*) AS hostel_count 
+ FROM Hostel 
+ GROUP BY type; 
+  
+ -- 3. Display the menu in the hostel ‘x’ on Tuesday. 
+ SELECT breakfast, lunch, dinner 
+ FROM Menu 
+ WHERE hno = 'x' AND day = 'Tuesday'; 
+  
+ -- 4. Display the number of wardens for each hostel. 
+ SELECT h.hname, COUNT(w.wname) AS warden_count 
+ FROM Hostel h 
+ LEFT JOIN Warden w ON h.hno = w.hno 
+ GROUP BY h.hname; 
+  
+ -- 5. Display the total number of students in the particular hostel. 
+ SELECT h.hname, COUNT(s.sid) AS student_count 
+ FROM Hostel h 
+ LEFT JOIN Student s ON h.hno = s.hno 
+ GROUP BY h.hname; 
+  
+ -- 6. Change the breakfast of the hostel 5 on Thursday to ‘Noodles’. 
+ UPDATE Menu 
+ SET breakfast = 'Noodles' 
+ WHERE hno = 5 AND day = 'Thursday'; 
+  
+ -- 7. Display the Wardens for each hostel with the qualification ‘B. Com’. 
+ SELECT h.hname, w.wname 
+ FROM Hostel h 
+ JOIN Warden w ON h.hno = w.hno 
+ WHERE w.qual = 'B. Com'; 
+  
+ -- 8. Display the total number of students in the particular hostel whose name starts with 'A'. 
+ SELECT h.hname, COUNT(s.sid) AS student_count 
+ FROM Hostel h 
+ LEFT JOIN Student s ON h.hno = s.hno 
+ WHERE s.sname LIKE 'A%' 
+ GROUP BY h.hname; 
+  
+ -- 9. Create a view with name of the student, gender, hostel number and their warden name. 
+ CREATE VIEW StudentWardenView AS 
+ SELECT s.sname AS student_name, s.gender, s.hno, 
+        w.wname AS warden_name 
+ FROM Student s 
+ LEFT JOIN Warden w ON s.hno = w.hno; 
+  
+ SELECT * FROM StudentWardenView;
