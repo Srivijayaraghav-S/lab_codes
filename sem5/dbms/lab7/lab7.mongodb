@@ -1,0 +1,23 @@
+use ('106121131_lab1');
+// Insertion
+db.students.insertOne({"name":"Vijay","rno":"1","age":"19"});
+// Find
+db.students.findOne({"name":"Vijay"});
+// Update
+db.students.updateOne({"name":"Vijay"},{"$set":{"age":"21"}});
+// Delete
+db.students.deleteOne({"name":"Vijay"});
+// Comparison Operator
+db.students.findOne({"age":{"$lt":"25"}});
+// Logical Operator
+db.students.findOne({"$or":[{"age":{"$gt":"20"}},{"name":"Vijay"}]});
+// Element Operator
+db.students.findOne({"age":{"$exists":true}});
+// Array Operator
+db.students.insertOne({"name":"Raghav","hobbies":["reading","writing","coding"]});
+db.students.updateOne({"name":"Raghav"},{"$pop":{"hobbies":1}});
+// Group Operator and Match Operator
+db.students.updateOne({"name":"Raghav"},{"$set":{"age":"22"}});
+db.students.aggregate([{"$match":{"age":{"$lt":"25"}}},{"$group":{"_id":"age","count":{"$sum":1}}}]);
+// Sort Operator (Ascending)
+db.students.find().sort({"age":1});
